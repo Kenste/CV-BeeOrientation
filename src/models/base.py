@@ -30,16 +30,16 @@ class UNet3(nn.Module):
       - Output head: 3-class segmentation (background, head, tail)
 
     Input:
-      3×160×160 RGB image
+      1×160×160 grayscale image
 
     Output:
       3×160×160 per-pixel logits
     """
 
-    def __init__(self, in_channels=3, num_classes=3, base_filters=32):
+    def __init__(self, in_channels=1, num_classes=3, base_filters=32):
         super().__init__()
         # --- Encoder ---
-        self.enc1 = DoubleConv(in_channels, base_filters)  # 3 → 32
+        self.enc1 = DoubleConv(in_channels, base_filters)  # 1 → 32
         self.pool1 = nn.MaxPool2d(2)
         self.enc2 = DoubleConv(base_filters, base_filters * 2)  # 32 → 64
         self.pool2 = nn.MaxPool2d(2)
