@@ -2,7 +2,10 @@
 
 This repository contains coursework for a computer vision project focused on **head/tail segmentation of honey bees**
 using a 3-level U-Net architecture inspired by Bozek et al.'s paper: [*"Markerless tracking of an entire honey bee
-colony"*](https://www.nature.com/articles/s41467-021-21769-1)
+colony"*](https://www.nature.com/articles/s41467-021-21769-1).
+
+The segmentation masks produced by the model will be used to estimate each bee’s orientation based on the major axis of
+the head/tail regions.
 
 
 ---
