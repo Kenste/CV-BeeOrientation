@@ -26,7 +26,7 @@ class BeeSegmentationDataset(Dataset):
     def __getitem__(self, idx):
         img_name = self.filenames[idx]
         img_path = os.path.join(self.image_dir, img_name)
-        mask_path = os.path.join(self.mask_dir, img_name)
+        mask_path = os.path.join(self.mask_dir, img_name.replace(".png", "_mask.png"))
 
         image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
         mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE).astype(np.int64)
