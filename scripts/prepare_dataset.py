@@ -129,7 +129,11 @@ def main(input_dir, output_dir):
             mask_out_path = os.path.join(output_dir, "masks", f"bee_{counter:06d}_mask.png")
 
             cv2.imwrite(img_out_path, cropped_img)
-            cv2.imwrite(mask_out_path, mask)
+
+            # turn any non-zero mask pixels into 255 so you can see them,
+            # and so ToTensor() yields exactly 1.0 for bee pixels
+            binary_mask = (mask > 0).astype(np.uint8) * 255
+            cv2.imwrite(mask_out_path, binary_mask)
             counter += 1
 
     print(f"\nSaved {counter} image-mask pairs to {output_dir}")
