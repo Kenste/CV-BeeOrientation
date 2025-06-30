@@ -29,7 +29,8 @@ class BeeSegmentationDataset(Dataset):
         mask_path = os.path.join(self.mask_dir, img_name.replace(".png", "_mask.png"))
 
         image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
-        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE).astype(np.int64)
+        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+        mask = (mask > 0).astype(np.float32)
 
         # Add channel dimension to grayscale image → (1, H, W)
         image = np.expand_dims(image, axis=0)
