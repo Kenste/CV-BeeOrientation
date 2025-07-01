@@ -15,13 +15,13 @@ the head/tail regions.
 To convert the original annotated bee frames into cropped image/mask pairs suitable for training:
 
 ```bash
-python scripts/prepare_dataset.py --data-dir /path/to/dataset --out-dir dataset/processed
+python scripts/prepare_dataset.py --input-dir /path/to/dataset --output-dir dataset/processed
 ```
 
 Where:
 
-- `--data-dir` should point to the folder containing frames/ and frames_txt/
-- `--out-dir` is where processed crops and masks will be saved
+- `--input-dir` should point to the folder containing frames/ and frames_txt/
+- `--output-dir` is where processed crops and masks will be saved
 
 This script will:
 
