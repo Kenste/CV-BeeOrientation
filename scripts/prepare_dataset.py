@@ -129,10 +129,7 @@ def main(input_dir, output_dir):
             mask_out_path = os.path.join(output_dir, "masks", f"bee_{counter:06d}_mask.png")
 
             cv2.imwrite(img_out_path, cropped_img)
-
-           
-            vis = (mask.astype(np.uint8) * 127)
-            cv2.imwrite(mask_out_path, vis)
+            cv2.imwrite(mask_out_path, mask)
             counter += 1
 
     print(f"\nSaved {counter} image-mask pairs to {output_dir}")

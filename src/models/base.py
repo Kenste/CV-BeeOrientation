@@ -3,14 +3,29 @@ import torch.nn as nn
 
 
 class DoubleConv(nn.Module):
-    """(Conv → ReLU) ×2"""
+    """
+    Double convolutional block: (Conv2d → [Dropout2d] → BatchNorm2d → ReLU) ×2
 
-    def __init__(self, in_ch, out_ch):
+    Args:
+        in_ch (int): Number of input channels.
+        out_ch (int): Number of output channels.
+        dropout (float): Dropout probability (0.0 disables dropout).
+
+    This block performs two consecutive convolution operations, each followed by:
+    optional spatial dropout (Dropout2d), batch normalization, and a ReLU activation.
+    """
+
+    def __init__(self, in_ch, out_ch, dropout=0.0):
         super().__init__()
         self.net = nn.Sequential(
             nn.Conv2d(in_ch, out_ch, kernel_size=3, padding=1),
+            nn.Dropout2d(p=dropout) if dropout > 0 else nn.Identity(),
+            nn.BatchNorm2d(out_ch),
             nn.ReLU(inplace=True),
+
             nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+            nn.Dropout2d(p=dropout) if dropout > 0 else nn.Identity(),
+            nn.BatchNorm2d(out_ch),
             nn.ReLU(inplace=True),
         )
 
