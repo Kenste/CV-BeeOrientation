@@ -130,10 +130,9 @@ def main(input_dir, output_dir):
 
             cv2.imwrite(img_out_path, cropped_img)
 
-            # turn any non-zero mask pixels into 255 so you can see them,
-            # and so ToTensor() yields exactly 1.0 for bee pixels
-            # keep the 0/1/2 values as-is
-            cv2.imwrite(mask_out_path, mask)
+           
+            vis = (mask.astype(np.uint8) * 127)
+            cv2.imwrite(mask_out_path, vis)
             counter += 1
 
     print(f"\nSaved {counter} image-mask pairs to {output_dir}")
