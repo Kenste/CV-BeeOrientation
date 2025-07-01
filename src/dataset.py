@@ -29,10 +29,9 @@ class BeeSegmentationDataset(Dataset):
         mask_path = os.path.join(self.mask_dir, img_name.replace(".png", "_mask.png"))
 
         image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
-        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-        mask = (mask > 0).astype(np.float32)
+        image = np.expand_dims(image, 0)  # (1,H,W)
 
-        # Add channel dimension to grayscale image → (1, H, W)
-        image = np.expand_dims(image, axis=0)
+        # --- load mask as {0,1,2} ---
+        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE).astype(np.int64)
 
         return torch.from_numpy(image), torch.from_numpy(mask)

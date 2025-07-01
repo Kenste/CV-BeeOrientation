@@ -132,8 +132,8 @@ def main(input_dir, output_dir):
 
             # turn any non-zero mask pixels into 255 so you can see them,
             # and so ToTensor() yields exactly 1.0 for bee pixels
-            binary_mask = (mask > 0).astype(np.uint8) * 255
-            cv2.imwrite(mask_out_path, binary_mask)
+            # keep the 0/1/2 values as-is
+            cv2.imwrite(mask_out_path, mask)
             counter += 1
 
     print(f"\nSaved {counter} image-mask pairs to {output_dir}")
