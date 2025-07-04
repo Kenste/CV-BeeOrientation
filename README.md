@@ -31,6 +31,10 @@ This script will:
     - 0 = background
     - 1 = head ellipse
     - 2 = tail ellipse
+- Save a `labels.csv` file alongside the data, containing:
+    - `image_filename`: file name of the cropped bee image
+    - `mask_filename`: file name of the corresponding mask
+    - `angle`: the bee’s orientation angle in radians, as given in the dataset: measured clockwise from vertical upward
 
 --- 
 

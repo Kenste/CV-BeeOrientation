@@ -3,6 +3,7 @@ import cv2
 import math
 import argparse
 import numpy as np
+import csv
 from tqdm import tqdm
 
 ELLIPSE_AXES = (55, 20)
@@ -102,7 +103,7 @@ def process_image(image_path, annotation_path):
         cropped_bee = image[y1:y2, x1:x2].copy()
         mask = create_bee_segmentation_mask(cropped_bee, annotation, ELLIPSE_AXES)
 
-        crops_and_masks.append((cropped_bee, mask))
+        crops_and_masks.append((cropped_bee, mask, annotation["angle"]))
     return crops_and_masks
 
 
@@ -111,6 +112,11 @@ def main(input_dir, output_dir):
     os.makedirs(os.path.join(output_dir, "masks"), exist_ok=True)
     frames_dir = os.path.join(input_dir, "frames")
     annos_dir = os.path.join(input_dir, "frames_txt")
+
+    csv_path = os.path.join(output_dir, "labels.csv")
+    csv_file = open(csv_path, mode="w", newline="")
+    csv_writer = csv.writer(csv_file)
+    csv_writer.writerow(["image_filename", "mask_filename", "angle"])
 
     frame_files = sorted([f for f in os.listdir(frames_dir) if f.endswith(".png")])
 
@@ -124,21 +130,26 @@ def main(input_dir, output_dir):
             continue
 
         samples = process_image(img_path, anno_path)
-        for cropped_img, mask in samples:
-            img_out_path = os.path.join(output_dir, "images", f"bee_{counter:06d}.png")
-            mask_out_path = os.path.join(output_dir, "masks", f"bee_{counter:06d}_mask.png")
+        for cropped_img, mask, angle in samples:
+            img_filename = f"bee_{counter:06d}.png"
+            mask_filename = f"bee_{counter:06d}_mask.png"
+            img_out_path = os.path.join(output_dir, "images", img_filename)
+            mask_out_path = os.path.join(output_dir, "masks", mask_filename)
 
             cv2.imwrite(img_out_path, cropped_img)
             cv2.imwrite(mask_out_path, mask)
+            csv_writer.writerow([img_filename, mask_filename, angle])
             counter += 1
 
-    print(f"\nSaved {counter} image-mask pairs to {output_dir}")
+    csv_file.close()
+    print(f"\nSaved {counter} image-mask-angle records to {output_dir}")
+    print(f"CSV file: {csv_path}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Prepare bee segmentation dataset")
     parser.add_argument("--input-dir", required=True, help="Path to directory with original frames and annotations")
-    parser.add_argument("--output-dir", required=True, help="Path to save processed crops and masks")
+    parser.add_argument("--output-dir", required=True, help="Path to save processed crops, masks, and CSV")
     args = parser.parse_args()
 
     main(args.input_dir, args.output_dir)
