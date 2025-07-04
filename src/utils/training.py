@@ -20,7 +20,7 @@ def train_one_epoch(model, loader, optimizer, criterion, device):
     """
     model.train()
     epoch_loss = 0
-    for images, masks in tqdm(loader, desc="Training", leave=False):
+    for images, masks in tqdm(loader, desc="Training", leave=True):
         images, masks = images.to(device), masks.to(device)
 
         outputs = model(images)
@@ -50,7 +50,7 @@ def evaluate(model, loader, criterion, device):
     """
     model.eval()
     val_loss = 0
-    for images, masks in tqdm(loader, desc="Validation", leave=False):
+    for images, masks in tqdm(loader, desc="Validation", leave=True):
         images, masks = images.to(device), masks.to(device)
 
         outputs = model(images)
@@ -132,6 +132,7 @@ def train_model(
             best_path = os.path.join(checkpoint_dir, "best_model.pth")
             save_checkpoint(model, optimizer, best_epoch, best_path)
             print(f"  New best model saved at epoch {best_epoch}")
+        print()
 
     print(f"\nTraining finished. Best val loss: {best_val_loss:.4f} at epoch {best_epoch}")
     print(f"Best model saved at: {best_path}")
