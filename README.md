@@ -1,8 +1,15 @@
 # 🐝 CV-BeeOrientation
 
-This repository contains coursework for a computer vision project focused on **head/tail segmentation of honey bees**
-using a 3-level U-Net architecture inspired by Bozek et al.'s paper: [*"Markerless tracking of an entire honey bee
-colony"*](https://www.nature.com/articles/s41467-021-21769-1).
+This repository contains coursework for a computer vision project focused on **head/tail segmentation of honey bees**.
+We implement and compare several deep learning models to segment the head and tail regions of each bee, enabling
+orientation estimation based on the major axis of the segmented regions.
+
+Implemented models include:
+
+- A 3-level U-Net architecture inspired by Bozek et al.'s paper: [*"Markerless tracking of an entire honey bee
+  colony"*](https://www.nature.com/articles/s41467-021-21769-1).
+- A ResUNet18, which combines a ResNet-18 encoder (pretrained on ImageNet) with a U-Net–style decoder and skip
+  connections.
 
 The segmentation masks produced by the model will be used to estimate each bee’s orientation based on the major axis of
 the head/tail regions.
