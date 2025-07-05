@@ -20,7 +20,7 @@ def train_one_epoch(model, loader, optimizer, criterion, device):
     """
     model.train()
     epoch_loss = 0
-    for images, masks in tqdm(loader, desc="Training", leave=True):
+    for images, masks, _ in tqdm(loader, desc="Training", leave=True):
         images, masks = images.to(device), masks.to(device)
 
         outputs = model(images)
@@ -50,7 +50,7 @@ def evaluate(model, loader, criterion, device):
     """
     model.eval()
     val_loss = 0
-    for images, masks in tqdm(loader, desc="Validation", leave=True):
+    for images, masks, _ in tqdm(loader, desc="Validation", leave=True):
         images, masks = images.to(device), masks.to(device)
 
         outputs = model(images)
