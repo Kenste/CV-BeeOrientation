@@ -4,3 +4,5 @@ opencv-python>=4.7.0.72
 tqdm>=4.67.1
 torch>=2.4.1
 torchvision>=0.19.1
+pandas>=2.2.3
+torchmetrics>=1.7.4
