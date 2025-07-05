@@ -86,7 +86,7 @@ def train_model(
         criterion,
         device,
         num_epochs=20,
-        checkpoint_dir=None,
+        checkpoint_filename=None,
 ):
     """
     Train a model with validation, and save the best checkpoint.
@@ -99,7 +99,7 @@ def train_model(
         criterion (loss function): loss function.
         device (torch.device): device to run on.
         num_epochs (int, optional): number of epochs. Default is 20.
-        checkpoint_dir (str, optional): directory to save checkpoints. Defaults to "checkpoints".
+        checkpoint_filename (str, optional): filename (.pth) to save this model's checkpoints. Defaults to the model's name.
 
     Returns:
         tuple:
@@ -107,7 +107,9 @@ def train_model(
             list of float: validation losses per epoch.
             str: path to best saved model.
     """
-    os.makedirs(checkpoint_dir or "checkpoints", exist_ok=True)
+    os.makedirs("checkpoints", exist_ok=True)
+    if not checkpoint_filename:
+        checkpoint_filename = model.__class__.__name__ + ".pth"
 
     train_losses, val_losses = [], []
     best_val_loss = float("inf")
@@ -129,7 +131,7 @@ def train_model(
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_epoch = epoch + 1
-            best_path = os.path.join(checkpoint_dir, "best_model.pth")
+            best_path = os.path.join("checkpoints", checkpoint_filename)
             save_checkpoint(model, optimizer, best_epoch, best_path)
             print(f"  New best model saved at epoch {best_epoch}")
         print()
