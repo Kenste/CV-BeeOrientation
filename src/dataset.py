@@ -34,4 +34,4 @@ class BeeSegmentationDataset(Dataset):
         # Add channel dimension to grayscale image → (1, H, W)
         image = np.expand_dims(image, axis=0)
 
-        return torch.from_numpy(image), torch.from_numpy(mask)
+        return torch.from_numpy(image), torch.from_numpy(mask), img_name.replace(".png", "_mask.png")

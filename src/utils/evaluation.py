@@ -3,18 +3,22 @@ import torch
 from torchmetrics.segmentation import MeanIoU
 from tqdm import tqdm
 
+from src.utils.orientation import estimate_orientation_bozek, angular_error_radians
+
 
 @torch.no_grad()
-def evaluate(model, loader, criterion, device, num_classes=3):
+def evaluate_segmentation(model, loader, criterion, device, num_classes=3):
     """
-    Evaluate the model on a dataset and compute per-class and foreground mIoU.
+    Evaluate the model’s segmentation performance on a dataset.
+
+    Computes average loss, per-class IoU, and mean foreground IoU (classes 1 & 2).
 
     Args:
         model (torch.nn.Module): model to evaluate.
         loader (DataLoader): data loader to iterate over.
         criterion (loss function): loss function to compute.
-        device (torch.device): device to run on.
-        num_classes (int): number of classes in the segmentation task.
+        device (torch.device): device to run the evaluation on.
+        num_classes (int): number of segmentation classes (including background).
 
     Returns:
         tuple:
@@ -24,8 +28,6 @@ def evaluate(model, loader, criterion, device, num_classes=3):
     """
     model.eval()
     total_loss = 0
-
-    # configure MeanIoU to return per-class IoUs
     miou_metric = MeanIoU(
         num_classes=num_classes,
         include_background=True,
@@ -33,7 +35,7 @@ def evaluate(model, loader, criterion, device, num_classes=3):
         input_format="index"
     ).to(device)
 
-    for images, masks in tqdm(loader, desc="Evaluating", leave=True):
+    for images, masks, _ in tqdm(loader, desc="Evaluating segmentation", leave=True):
         images, masks = images.to(device), masks.to(device)
 
         outputs = model(images)
@@ -45,23 +47,69 @@ def evaluate(model, loader, criterion, device, num_classes=3):
         miou_metric.update(preds, masks)
 
     avg_loss = total_loss / len(loader)
-
-    # get per-class IoUs
-    per_class_iou = miou_metric.compute()
-    per_class_iou = per_class_iou.cpu().numpy()
-
-    # extract foreground classes (1 & 2)
-    fg_classes = [1, 2]
-    fg_ious = per_class_iou[fg_classes]
+    per_class_iou = miou_metric.compute().cpu().numpy()
+    fg_ious = per_class_iou[[1, 2]]
 
     # mean IoU over foreground classes
     fg_ious_no_nan = fg_ious[~np.isnan(fg_ious)]
     miou_fg = np.mean(fg_ious_no_nan) if len(fg_ious_no_nan) > 0 else float('nan')
 
-    # make a dict of per-class IoUs (including all)
     ious_dict = {cls: per_class_iou[cls] for cls in range(num_classes)}
 
     return avg_loss, ious_dict, miou_fg
+
+
+@torch.no_grad()
+def evaluate_orientation(model, loader, device, gt_csv, percentiles=None):
+    """
+    Evaluate orientation prediction error against ground-truth angles.
+
+    Compares orientation estimated from predicted masks to GT angles (from CSV).
+
+    Args:
+        model (torch.nn.Module): model to evaluate.
+        loader (DataLoader): data loader for the dataset.
+        device (torch.device): device to run the evaluation on.
+        gt_csv (dict): mapping {mask_filename → ground-truth angle in radians}.
+        percentiles (list, optional): percentiles to compute and report. Defaults to [50, 75, 90, 95, 99].
+
+    Returns:
+        dict: dictionary containing mean error, std deviation, and selected percentiles of angular error (in degrees).
+    """
+    if percentiles is None:
+        percentiles = [50, 75, 90, 95, 99]
+
+    model.eval()
+    pred_angles, gt_angles = [], []
+
+    for images, _, filenames in tqdm(loader, desc="Evaluating orientation", leave=True):
+        images = images.to(device)
+        outputs = model(images).argmax(dim=1).cpu().numpy()
+
+        for pred_mask, filename in zip(outputs, filenames):
+            pred_angle = estimate_orientation_bozek(pred_mask)
+            gt_angle = float(gt_csv[filename])
+
+            if pred_angle is None:
+                continue
+
+            pred_angles.append(pred_angle)
+            gt_angles.append(gt_angle)
+
+    pred_angles = np.array(pred_angles)
+    gt_angles = np.array(gt_angles)
+
+    errors_deg = np.degrees(angular_error_radians(pred_angles, gt_angles))
+    mean_err = np.mean(errors_deg)
+    std_err = np.std(errors_deg)
+
+    perc_values = {p: np.percentile(errors_deg, p) for p in percentiles}
+
+    return {
+        "mean_error_deg": mean_err,
+        "std_error_deg": std_err,
+        "percentiles": perc_values
+    }
 
 
 def load_checkpoint(model, checkpoint_path, device):
@@ -82,34 +130,49 @@ def load_checkpoint(model, checkpoint_path, device):
     return model
 
 
-def evaluate_on_test(model, test_loader, checkpoint_path, criterion, device, num_classes=3):
+def evaluate_on_test(model, test_loader, checkpoint_path, criterion, device, gt_csv, num_classes=3):
     """
-    Evaluate a trained model on the test set and report loss, per-class IoU, and foreground mIoU.
+    Run full evaluation on the test set: segmentation + orientation.
+
+    Loads the best checkpoint, evaluates segmentation metrics (loss, per-class IoU, mean foreground IoU)
+    and orientation error (mean, std, and selected percentiles).
 
     Args:
-        model (torch.nn.Module): model architecture to evaluate.
+        model (torch.nn.Module): model architecture.
         test_loader (DataLoader): test dataset loader.
-        checkpoint_path (str): path to best checkpoint (.pth) to load weights from.
-        criterion (loss function): loss function to compute.
+        checkpoint_path (str): path to the best checkpoint (.pth).
+        criterion (loss function): loss function.
         device (torch.device): device to run on.
-        num_classes (int): number of classes in the segmentation task.
+        gt_csv (dict): mapping {mask_filename → ground-truth angle in radians}.
+        num_classes (int): number of segmentation classes.
 
     Returns:
-        tuple:
-            float: average test loss.
-            dict: per-class IoU values {class_index: IoU}.
-            float: mean IoU computed over foreground classes (classes 1 and 2).
+        dict: dictionary containing segmentation and orientation evaluation results.
     """
-    # Load the best weights into the model
-    model = load_checkpoint(model, checkpoint_path, device)
-    model.to(device)
+    model = load_checkpoint(model, checkpoint_path, device).to(device)
 
-    test_loss, ious, miou_fg = evaluate(model, test_loader, criterion, device, num_classes)
+    seg_loss, ious, miou_fg = evaluate_segmentation(model, test_loader, criterion, device, num_classes)
+    orientation_metrics = evaluate_orientation(model, test_loader, device, gt_csv)
 
-    print(f"\nTest Loss: {test_loss:.4f}")
-    print(f"Per-class IoU:")
+    # Report segmentation
+    print(f"\nSegmentation Test Loss: {seg_loss:.4f}")
+    print(f"Per-class IoUs:")
     for cls, iou in ious.items():
         print(f"  Class {cls}: IoU = {iou:.4f}")
-    print(f"Mean IoU (foreground classes 1 & 2): {miou_fg:.4f}\n")
+    print(f"Foreground mIoU (head & tail): {miou_fg:.4f}")
 
-    return test_loss, ious, miou_fg
+    # Report orientation
+    print(f"\nOrientation Error:")
+    print(f"  Mean Error: {orientation_metrics['mean_error_deg']:.2f}°")
+    print(f"  Std Dev:   {orientation_metrics['std_error_deg']:.2f}°")
+    for p, val in orientation_metrics["percentiles"].items():
+        print(f"  {p}% of samples ≤ {val:.2f}° error")
+
+    return {
+        "segmentation": {
+            "loss": seg_loss,
+            "ious": ious,
+            "fg_miou": miou_fg
+        },
+        "orientation": orientation_metrics
+    }
