@@ -108,7 +108,8 @@ def evaluate_orientation(model, loader, device, gt_csv, percentiles=None):
     return {
         "mean_error_deg": mean_err,
         "std_error_deg": std_err,
-        "percentiles": perc_values
+        "percentiles": perc_values,
+        "all_errors_deg": errors_deg
     }
 
 
