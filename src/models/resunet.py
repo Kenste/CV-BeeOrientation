@@ -24,7 +24,7 @@ class ResUNet18(nn.Module):
     """
     def __init__(self, num_classes=3, dropout=0.0):
         super().__init__()
-        resnet = models.resnet18(pretrained=True)
+        resnet = models.resnet18(weights="IMAGENET1K_V1")
 
         # --- Input adapter ---
         self.input_adapter = nn.Conv2d(1, 3, kernel_size=1)  # 1 → 3
