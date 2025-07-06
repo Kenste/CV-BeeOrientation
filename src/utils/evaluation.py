@@ -102,12 +102,14 @@ def evaluate_orientation(model, loader, device, gt_csv, percentiles=None):
     errors_deg = np.degrees(angular_error_radians(pred_angles, gt_angles))
     mean_err = np.mean(errors_deg)
     std_err = np.std(errors_deg)
+    median_err = np.median(errors_deg)
 
     perc_values = {p: np.percentile(errors_deg, p) for p in percentiles}
 
     return {
         "mean_error_deg": mean_err,
         "std_error_deg": std_err,
+        "median_error_deg": median_err,
         "percentiles": perc_values,
         "all_errors_deg": errors_deg
     }
@@ -164,8 +166,9 @@ def evaluate_on_test(model, test_loader, checkpoint_path, criterion, device, gt_
 
     # Report orientation
     print(f"\nOrientation Error:")
-    print(f"  Mean Error: {orientation_metrics['mean_error_deg']:.2f}°")
-    print(f"  Std Dev:   {orientation_metrics['std_error_deg']:.2f}°")
+    print(f"  Mean Error:   {orientation_metrics['mean_error_deg']:.2f}°")
+    print(f"  Std Dev:      {orientation_metrics['std_error_deg']:.2f}°")
+    print(f"  Median Error: {orientation_metrics['std_error_deg']:.2f}°")
     for p, val in orientation_metrics["percentiles"].items():
         print(f"  {p}% of samples ≤ {val:.2f}° error")
 
