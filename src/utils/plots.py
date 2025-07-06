@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -11,7 +13,7 @@ def plot_training_curves(train_losses, val_losses, model, save_path=None):
         train_losses (list of float): training losses per epoch.
         val_losses (list of float): validation losses per epoch.
         model (torch.nn.Module): trained model instance (to extract class name).
-        save_path (str, optional): if provided, save the figure to this path.
+        save_path (str, optional): if provided, save the figure to this path (creates dirs if needed).
     """
     plt.figure(figsize=(8, 6))
     plt.plot(train_losses, label="Train Loss", marker='o')
@@ -23,6 +25,7 @@ def plot_training_curves(train_losses, val_losses, model, save_path=None):
     plt.grid(True)
 
     if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
@@ -33,10 +36,10 @@ def plot_predictions(model, loader, device, n=10, save_path=None):
 
     Args:
         model (torch.nn.Module): trained model.
-        loader (DataLoader): dataLoader to sample from (test or validation).
+        loader (DataLoader): DataLoader to sample from (test or validation).
         device (torch.device): device to run inference on.
         n (int): number of examples to display.
-        save_path (str, optional): if provided, save the figure to this path.
+        save_path (str, optional): if provided, save the figure to this path (creates dirs if needed).
     """
     model.eval()
     images, masks, _ = next(iter(loader))
@@ -65,6 +68,7 @@ def plot_predictions(model, loader, device, n=10, save_path=None):
 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
@@ -76,7 +80,7 @@ def plot_orientation_error_distribution(errors_deg, model, save_path=None):
     Args:
         errors_deg (array-like): orientation errors in degrees.
         model (torch.nn.Module): trained model instance (to extract class name).
-        save_path (str, optional): if provided, save the figure to this path.
+        save_path (str, optional): if provided, save the figure to this path (creates dirs if needed).
     """
     errors_deg = np.asarray(errors_deg)
 
@@ -97,10 +101,11 @@ def plot_orientation_error_distribution(errors_deg, model, save_path=None):
     axs[1].set_title("Orientation Error CDF")
     axs[1].grid(True)
 
-    fig.suptitle(f"Orientation Error Distribution {model.__class__.__name__}", fontsize=14)
+    fig.suptitle(f"Orientation Error Distribution - {model.__class__.__name__}", fontsize=14)
 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
 
     if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, bbox_inches="tight")
     plt.show()
