@@ -107,7 +107,7 @@ def train_model(
             list of float: validation losses per epoch.
             str: path to best saved model.
     """
-    os.makedirs("checkpoints", exist_ok=True)
+    os.makedirs("results/checkpoints", exist_ok=True)
     if not checkpoint_filename:
         checkpoint_filename = model.__class__.__name__ + ".pth"
 
@@ -131,7 +131,8 @@ def train_model(
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_epoch = epoch + 1
-            best_path = os.path.join("checkpoints", checkpoint_filename)
+            best_path = os.path.join("results/checkpoints", checkpoint_filename)
+
             save_checkpoint(model, optimizer, best_epoch, best_path)
             print(f"  New best model saved at epoch {best_epoch}")
         print()

@@ -1,49 +1,81 @@
 # 🐝 CV-BeeOrientation
 
-This repository contains coursework for a computer vision project focused on **head/tail segmentation of honey bees**.
+This repository contains a computer vision project focused on **head/tail segmentation and orientation estimation of
+honey bees**.
 We implement and compare several deep learning models to segment the head and tail regions of each bee, enabling
-orientation estimation based on the major axis of the segmented regions.
+orientation estimation based on the segmented regions.
 
-Implemented models include:
+## Implemented Models
 
-- A 3-level U-Net architecture inspired by Bozek et al.'s paper: [*"Markerless tracking of an entire honey bee
-  colony"*](https://www.nature.com/articles/s41467-021-21769-1).
-- A ResUNet18, which combines a ResNet-18 encoder (pretrained on ImageNet) with a U-Net–style decoder and skip
-  connections.
+- **UNet3** – A 3-level U-Net inspired by Bozek et al., [*"Markerless tracking of an entire honey bee
+  colony"*](https://www.nature.com/articles/s41467-021-21769-1)
+- **ResUNet18** – A U-Net with a ResNet-18 encoder backbone (pretrained on ImageNet) and skip connections
 
-The segmentation masks produced by the model will be used to estimate each bee’s orientation based on the major axis of
-the head/tail regions.
+Both models produce segmentation masks that are then used to estimate the bee's body orientation.
 
+---
+
+## Workflow
+
+The entire experiment &ndash; from downloading the dataset to training, evaluation, and visualization &ndash; can now be
+run directly from the provided **Jupyter notebook**:
+[`Bee Orientation.ipynb`](Bee%20Orientation.ipynb)
+
+The notebook will:
+
+- Download & prepare the dataset
+- Split the dataset into train/val/test
+- Define and train both UNet3 & ResUNet18
+- Evaluate segmentation & orientation metrics
+- Save results & plots
+
+You can also run individual scripts if desired (see below).
 
 ---
 
 ## Dataset Preparation
 
-To convert the original annotated bee frames into cropped image/mask pairs suitable for training:
+You can prepare the dataset manually, or let the notebook handle it.
+
+To prepare it manually:
 
 ```bash
-python scripts/prepare_dataset.py --input-dir /path/to/dataset --output-dir dataset/processed
+python scripts/prepare_dataset.py
 ```
-
-Where:
-
-- `--input-dir` should point to the folder containing frames/ and frames_txt/
-- `--output-dir` is where processed crops and masks will be saved
 
 This script will:
 
-- Parse the annotations
-- Crop 160×160 grayscale bee images centered on each bee
-- Generate corresponding segmentation masks:
+- Download two `.tgz` archives with the original frames & annotations
+- Extract and crop bee images (160×160)
+- Generate segmentation masks:
     - 0 = background
     - 1 = head ellipse
     - 2 = tail ellipse
-- Save a `labels.csv` file alongside the data, containing:
-    - `image_filename`: file name of the cropped bee image
-    - `mask_filename`: file name of the corresponding mask
-    - `angle`: the bee’s orientation angle in radians, as given in the dataset: measured clockwise from vertical upward
+- Write `data/processed/labels.csv` with:
+    - `image_filename`: cropped image file
+    - `mask_filename`: corresponding mask file
+    - `angle`: ground-truth orientation angle (radians, clockwise from vertical up)
+
+The processed dataset is saved under: `data/processed/`
 
 --- 
+
+## Training & Evaluation
+
+Use the notebook for the full pipeline or call the training script components directly:
+
+- Training & validation losses are plotted
+- Segmentation performance is reported as:
+    - Loss
+    - Per-class IoU
+    - Foreground mean IoU
+- Orientation error is computed against ground truth angles, reported as:
+    - Mean ± std
+    - Median
+    - Percentile thresholds (50%, 75%, 90%, 95%, 99%)
+    - Distribution plots (histogram & CDF)
+
+---
 
 ## Setup
 
@@ -51,4 +83,16 @@ Install dependencies with:
 
 ```bash
 pip install -r requirements.txt
+```
+
+---
+
+## Notes
+
+- The notebook automatically downloads & prepares the dataset if not already present.
+- Results, plots, and checkpoints are saved to the `results/` directory.
+- Ground-truth "base error" (between GT mask-derived and GT CSV angles) can optionally be computed by running:
+
+```bash
+python scripts/evaluate_gt_error.py --csv data/processed/labels.csv --mask-dir data/processed/masks
 ```
