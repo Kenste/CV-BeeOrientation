@@ -28,6 +28,7 @@ def evaluate_segmentation(model, loader, criterion, device, num_classes=3):
     """
     model.eval()
     total_loss = 0
+
     miou_metric = MeanIoU(
         num_classes=num_classes,
         include_background=True,
@@ -48,9 +49,9 @@ def evaluate_segmentation(model, loader, criterion, device, num_classes=3):
 
     avg_loss = total_loss / len(loader)
     per_class_iou = miou_metric.compute().cpu().numpy()
-    fg_ious = per_class_iou[[1, 2]]
 
     # mean IoU over foreground classes
+    fg_ious = per_class_iou[[1, 2]]
     fg_ious_no_nan = fg_ious[~np.isnan(fg_ious)]
     miou_fg = np.mean(fg_ious_no_nan) if len(fg_ious_no_nan) > 0 else float('nan')
 
@@ -74,7 +75,7 @@ def evaluate_orientation(model, loader, device, gt_csv, percentiles=None):
         percentiles (list, optional): percentiles to compute and report. Defaults to [50, 75, 90, 95, 99].
 
     Returns:
-        dict: dictionary containing mean error, std deviation, and selected percentiles of angular error (in degrees).
+        dict: dictionary containing mean error, std deviation, median, and selected percentiles of angular error (degrees).
     """
     if percentiles is None:
         percentiles = [50, 75, 90, 95, 99]
@@ -138,7 +139,7 @@ def evaluate_on_test(model, test_loader, checkpoint_path, criterion, device, gt_
     Run full evaluation on the test set: segmentation + orientation.
 
     Loads the best checkpoint, evaluates segmentation metrics (loss, per-class IoU, mean foreground IoU)
-    and orientation error (mean, std, and selected percentiles).
+    and orientation error (mean, std, median, and percentiles).
 
     Args:
         model (torch.nn.Module): model architecture.
@@ -168,7 +169,7 @@ def evaluate_on_test(model, test_loader, checkpoint_path, criterion, device, gt_
     print(f"\nOrientation Error:")
     print(f"  Mean Error:   {orientation_metrics['mean_error_deg']:.2f}°")
     print(f"  Std Dev:      {orientation_metrics['std_error_deg']:.2f}°")
-    print(f"  Median Error: {orientation_metrics['std_error_deg']:.2f}°")
+    print(f"  Median Error: {orientation_metrics['median_error_deg']:.2f}°")
     for p, val in orientation_metrics["percentiles"].items():
         print(f"  {p}% of samples ≤ {val:.2f}° error")
 
