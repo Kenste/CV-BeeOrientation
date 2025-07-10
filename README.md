@@ -69,11 +69,23 @@ Use the notebook for the full pipeline or call the training script components di
     - Loss
     - Per-class IoU
     - Foreground mean IoU
-- Orientation error is computed against ground truth angles, reported as:
-    - Mean ± std
-    - Median
+- Orientation estimation is evaluated as:
+    - Mean, std, median error (in degrees)
     - Percentile thresholds (50%, 75%, 90%, 95%, 99%)
-    - Distribution plots (histogram & CDF)
+    - Orientation error distributions (histogram, signed errors)
+    - Correlation between segmentation quality & orientation error
+    - Analysis of systematic biases and outliers
+
+Plots include:
+
+- Training curves
+- Segmentation vs orientation error (scatter & hexbin)
+- Orientation error vs GT angle (hexbin)
+- Examples of worst predictions
+- Examples of predictions with ~90° errors
+- Signed error distributions
+
+All outputs (plots & checkpoints) are saved under: `results/`
 
 ---
 
