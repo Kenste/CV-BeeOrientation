@@ -364,3 +364,48 @@ def plot_orientation_errors_in_range(eval_data, model, n=10, min_deg=75, max_deg
         plt.savefig(save_path, bbox_inches="tight")
 
     plt.show()
+
+
+def plot_orientation_error_vs_gt_angle_hexbin(eval_data, model, save_path=None, gridsize=40):
+    """
+    Plot a hexbin of orientation error (degrees) vs. ground-truth angle (degrees).
+
+    Args:
+        eval_data (list of dict): output from collect_evaluation_data.
+        model (torch.nn.Module): trained model (for the name).
+        save_path (str, optional): if provided, save the figure to this path (creates dirs if needed).
+        gridsize (int): number of hexagons in x-direction.
+    """
+    gt_angles_deg = []
+    errors_deg = []
+
+    for entry in eval_data:
+        pred_angle = entry['pred_angle_rad']
+        gt_angle = entry['gt_angle_rad']
+
+        if pred_angle is None:
+            continue
+
+        error_rad = angular_error_radians(pred_angle, gt_angle)
+        error_deg = np.degrees(error_rad)
+
+        gt_angles_deg.append(np.degrees(gt_angle) % 360)
+        errors_deg.append(error_deg)
+
+    if not gt_angles_deg:
+        print("No valid samples found to plot.")
+        return
+
+    plt.figure(figsize=(8, 6))
+    hb = plt.hexbin(gt_angles_deg, errors_deg, gridsize=gridsize, cmap='plasma', mincnt=1)
+    plt.colorbar(hb, label='Counts')
+    plt.xlabel("Ground-Truth Angle (degrees)")
+    plt.ylabel("Orientation Error (degrees)")
+    plt.title(f"Orientation Error vs GT Angle - {model.__class__.__name__}")
+    plt.grid(True, alpha=0.3)
+
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, bbox_inches="tight")
+
+    plt.show()
