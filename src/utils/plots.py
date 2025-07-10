@@ -184,6 +184,9 @@ def plot_miou_vs_orientation_error(eval_data, model, save_path=None):
         pred_angle = entry["pred_angle_rad"]
         gt_angle = entry["gt_angle_rad"]
 
+        if pred_angle is None:
+            continue
+
         miou = np.mean([ious[1], ious[2]])
 
         error_rad = angular_error_radians(pred_angle, gt_angle)
@@ -223,6 +226,9 @@ def plot_miou_vs_orientation_error_hexbin(eval_data, model, save_path=None, grid
         ious = entry["ious"]
         pred_angle = entry["pred_angle_rad"]
         gt_angle = entry["gt_angle_rad"]
+
+        if pred_angle is None:
+            continue
 
         miou = np.mean([ious[1], ious[2]])
         error_rad = angular_error_radians(pred_angle, gt_angle)
