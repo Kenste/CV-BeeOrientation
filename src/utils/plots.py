@@ -298,3 +298,69 @@ def plot_signed_orientation_error_distribution(eval_data, model, save_path=None,
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, bbox_inches="tight")
     plt.show()
+
+
+def plot_orientation_errors_in_range(eval_data, model, n=10, min_deg=75, max_deg=105, save_path=None):
+    """
+    Plot n examples with orientation errors within a specified degree range.
+
+    Args:
+        eval_data (list of dict): output from collect_evaluation_data.
+        model (torch.nn.Module): trained model (for the name).
+        n (int): number of examples to display.
+        min_deg (float): minimum orientation error in degrees (inclusive).
+        max_deg (float): maximum orientation error in degrees (inclusive).
+        save_path (str, optional): if provided, save the figure to this path (creates dirs if needed).
+    """
+    selected_data = []
+
+    for entry in eval_data:
+        pred_angle = entry['pred_angle_rad']
+        gt_angle = entry['gt_angle_rad']
+
+        if pred_angle is None:
+            continue
+
+        error_rad = angular_error_radians(pred_angle, gt_angle)
+        error_deg = np.degrees(error_rad)
+
+        if min_deg <= error_deg <= max_deg:
+            selected_data.append((entry['image'], entry['gt_mask'], entry['pred_mask'], error_deg))
+
+    if not selected_data:
+        print(f"No samples found with error between {min_deg}° and {max_deg}°.")
+        return
+
+    # Sort descending by error (within range) and take up to n
+    sorted_data = sorted(selected_data, key=lambda x: x[3], reverse=True)[:n]
+
+    fig, axs = plt.subplots(4, len(sorted_data), figsize=(2.5 * len(sorted_data), 8))
+
+    for i, (img, gt_mask, pred_mask, err_deg) in enumerate(sorted_data):
+        axs[0, i].imshow(img[0], cmap="gray")
+        axs[0, i].set_title("Input")
+
+        axs[1, i].imshow(gt_mask, cmap="gray")
+        axs[1, i].set_title("Ground Truth")
+
+        axs[2, i].imshow(pred_mask, cmap="gray")
+        axs[2, i].set_title("Prediction")
+
+        axs[3, i].text(0.5, 0.5, f"Error: {err_deg:.1f}°", fontsize=12, ha='center', va='center')
+        axs[3, i].set_xticks([])
+        axs[3, i].set_yticks([])
+
+        for j in range(4):
+            axs[j, i].axis("off")
+
+    plt.suptitle(
+        f"Examples with {min_deg}°–{max_deg}° Orientation Error - {model.__class__.__name__}",
+        fontsize=14
+    )
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, bbox_inches="tight")
+
+    plt.show()
