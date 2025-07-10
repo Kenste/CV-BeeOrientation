@@ -181,3 +181,89 @@ def evaluate_on_test(model, test_loader, checkpoint_path, criterion, device, gt_
         },
         "orientation": orientation_metrics
     }
+
+
+def compute_ious(pred_mask, gt_mask, classes=(0, 1, 2)):
+    """
+    Compute IoUs over specified classes between a predicted and a ground truth mask.
+
+    Args:
+        pred_mask (np.ndarray): predicted mask (H, W), integer labels.
+        gt_mask (np.ndarray): ground truth mask (H, W), integer labels.
+        classes (tuple): classes to compute IoU over.
+
+    Returns:
+        list: IoU values for each requested class.
+    """
+    ious = []
+    for cls in classes:
+        pred_cls = (pred_mask == cls)
+        gt_cls = (gt_mask == cls)
+
+        intersection = np.logical_and(pred_cls, gt_cls).sum()
+        union = np.logical_or(pred_cls, gt_cls).sum()
+
+        if union == 0:
+            iou = 1.0
+        else:
+            iou = intersection / union
+
+        ious.append(iou)
+
+    return ious
+
+
+@torch.no_grad()
+def collect_evaluation_data(model, loader, criterion, device, gt_csv):
+    """
+    Run model inference on loader and create an evaluation dataset.
+
+    Args:
+        model (torch.nn.Module): trained model.
+        loader (DataLoader): dataset loader yielding (images, masks, filenames).
+        criterion (loss function): loss function to compute per-batch loss.
+        device (torch.device): device to run inference on.
+        gt_csv (dict): mapping {filename → ground-truth angle in radians}.
+
+    Returns:
+        tuple:
+            list of dict: each dict contains:
+                - 'image': np.ndarray, original image (C, H, W)
+                - 'gt_mask': np.ndarray, ground truth mask (H, W)
+                - 'gt_angle_rad': float, ground truth angle in radians
+                - 'pred_mask': np.ndarray, predicted mask (H, W)
+                - 'pred_angle_rad': float or None, estimated angle from predicted mask
+                - 'ious': list, IoU values for each class
+            float: average loss over the dataset.
+    """
+    model.eval()
+    eval_dataset = []
+    total_loss = 0
+
+    for images, masks, filenames in tqdm(loader, desc="Collecting evaluation data", leave=True):
+        images, masks = images.to(device), masks.to(device)
+
+        outputs = model(images)
+
+        loss = criterion(outputs, masks)
+        total_loss += loss.item()
+
+        preds = outputs.argmax(dim=1)
+
+        for i, (image, mask, pred_mask, filename) in enumerate(zip(images, masks, preds, filenames)):
+            gt_angle = float(gt_csv[filename])
+            pred_angle = estimate_orientation_bozek(pred_mask.cpu().numpy())
+
+            ious = compute_ious(pred_mask.cpu().numpy(), mask.cpu().numpy())
+
+            eval_dataset.append({
+                'image': image.cpu().numpy(),
+                'gt_mask': mask.cpu().numpy(),
+                'gt_angle_rad': gt_angle,
+                'pred_mask': pred_mask.cpu().numpy(),
+                'pred_angle_rad': pred_angle,
+                'ious': ious,
+            })
+
+    avg_loss = total_loss / len(loader)
+    return eval_dataset, avg_loss
