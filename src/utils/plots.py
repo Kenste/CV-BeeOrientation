@@ -2,7 +2,8 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
+
+from src.utils.orientation import angular_error_radians
 
 
 def plot_training_curves(train_losses, val_losses, model, save_path=None):
@@ -99,10 +100,67 @@ def plot_orientation_error_distribution(errors_deg, model, save_path=None):
     axs[1].grid(True)
 
     fig.suptitle(f"Orientation Error Distribution - {model.__class__.__name__}", fontsize=14)
-
     plt.tight_layout(rect=[0, 0, 1, 0.95])
 
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, bbox_inches="tight")
+    plt.show()
+
+
+def plot_worst_orientation_errors(eval_data, model, n=10, save_path=None):
+    """
+    Plot the n worst masks based on orientation estimation error.
+
+    Args:
+        eval_data (list of dict): output from collect_evaluation_data.
+        model (torch.nn.Module): trained model (for the name).
+        n (int): number of worst examples to display.
+        save_path (str, optional): if provided, save the figure to this path (creates dirs if needed).
+    """
+    all_data = []
+
+    for entry in eval_data:
+        pred_angle = entry['pred_angle_rad']
+        gt_angle = entry['gt_angle_rad']
+
+        if pred_angle is None:
+            continue
+
+        error_rad = angular_error_radians(pred_angle, gt_angle)
+        error_deg = np.degrees(error_rad)
+
+        all_data.append((entry['image'], entry['gt_mask'], entry['pred_mask'], error_deg))
+
+    if len(all_data) == 0:
+        print("No valid samples found to plot.")
+        return
+
+    # Sort by error descending and take top n
+    sorted_data = sorted(all_data, key=lambda x: x[3], reverse=True)[:n]
+
+    fig, axs = plt.subplots(4, n, figsize=(2.5 * n, 6))
+    for i, (img, gt_mask, pred_mask, err_deg) in enumerate(sorted_data):
+
+        axs[0, i].imshow(img[0], cmap="gray")
+        axs[0, i].set_title("Input")
+
+        axs[1, i].imshow(gt_mask, cmap="gray")
+        axs[1, i].set_title("Ground Truth")
+
+        axs[2, i].imshow(pred_mask, cmap="gray")
+        axs[2, i].set_title("Prediction")
+
+        axs[3, i].text(0.5, 0.5, f"Error: {err_deg:.1f}°", fontsize=12, ha='center', va='center')
+
+        for j in range(4):
+            axs[j, i].axis("off")
+
+    plt.suptitle(f"Worst {n} Orientation Errors - {model.__class__.__name__}", fontsize=14)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, bbox_inches="tight")
+
     plt.show()
