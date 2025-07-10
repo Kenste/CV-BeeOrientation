@@ -30,43 +30,40 @@ def plot_training_curves(train_losses, val_losses, model, save_path=None):
     plt.show()
 
 
-def plot_predictions(model, loader, device, n=10, save_path=None):
+def plot_predictions(eval_data, model, n=10, save_path=None):
     """
     Plot a grid of input images, ground truth masks, and predicted masks.
 
     Args:
-        model (torch.nn.Module): trained model.
-        loader (DataLoader): DataLoader to sample from (test or validation).
-        device (torch.device): device to run inference on.
+        eval_data (list of dict): output from collect_evaluation_data.
+        model (torch.nn.Module): trained model (for the name).
         n (int): number of examples to display.
         save_path (str, optional): if provided, save the figure to this path (creates dirs if needed).
     """
-    model.eval()
-    images, masks, _ = next(iter(loader))
-    images, masks = images[:n].to(device), masks[:n]
-
-    with torch.no_grad():
-        outputs = model(images).argmax(dim=1).cpu()
-
-    images = images.cpu()
+    n = min(n, len(eval_data))
+    samples = eval_data[:n]
 
     fig, axs = plt.subplots(3, n, figsize=(2.5 * n, 6))
-    for i in range(n):
-        axs[0, i].imshow(images[i][0], cmap="gray")
+    for i, entry in enumerate(samples):
+        image = entry['image']
+        gt_mask = entry['gt_mask']
+        pred_mask = entry['pred_mask']
+
+        axs[0, i].imshow(image[0], cmap="gray")
         axs[0, i].set_title("Input")
 
-        axs[1, i].imshow(masks[i], cmap="gray")
+        axs[1, i].imshow(gt_mask, cmap="gray")
         axs[1, i].set_title("Ground Truth")
 
-        axs[2, i].imshow(outputs[i], cmap="gray")
+        axs[2, i].imshow(pred_mask, cmap="gray")
         axs[2, i].set_title("Prediction")
 
         for j in range(3):
             axs[j, i].axis("off")
 
     plt.suptitle(f"Predictions - {model.__class__.__name__}", fontsize=14)
-
     plt.tight_layout(rect=[0, 0, 1, 0.95])
+
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, bbox_inches="tight")
