@@ -1,0 +1,9 @@
+Tracking and analyzing the behavior of individuals within dense, dynamic groups remains a fundamental challenge in computer vision~\cite{bozek2021markerless, bozek2018pixel}.
+Honey bee colonies consist of thousands of similar individuals that move and interact rapidly on cluttered surfaces~\cite{bozek2021markerless}.
+This presents difficulties for automated image-based analysis, particularly when it comes to estimating the position and orientation of individuals in crowded settings~\cite{bozek2018pixel, bozek2021markerless}.
+
+Bozek et al.~\cite{bozek2021markerless} introduced a convolutional neural network (CNN)-based segmentation approach to detect unmarked bees and estimate their positions, orientations, and within-cell states on a natural honeycomb background. Their method achieved accurate tracking of individuals and revealed collective colony dynamics over extended periods.
+
+Building on this approach, we focus specifically on estimating the orientations of individual bees in dense hives using segmentation masks of the head and tail regions.
+We implement and compare two deep learning architectures -- a U-Net variant inspired by~\cite{bozek2021markerless} and a U-Net with a ResNet18 encoder -- and benchmark their performance based on segmentation quality and orientation accuracy.
+Our results demonstrate that while improved segmentation quality leads to more accurate orientation estimates, substantial annotation noise and challenging visual conditions limit overall accuracy.

@@ -1,0 +1,25 @@
+We begin by quantifying the base error inherent in the ground‑truth masks.
+We then compare the segmentation performance of our two architectures.
+Next, we evaluate the resulting orientation accuracy.
+Finally, we examine the relationship between segmentation quality and orientation error.
+All quantitative results are summarized in \cref{tab:segmentation_results,tab:orientation_results}, while key qualitative examples are shown in \cref{fig:segmentation_predictions,fig:failure_modes}.
+
+\subsection{Dataset \& Baseline Error}
+\label{subsec:baseline-error}
+\input{sections/4-results/1 - baseline error}
+
+\subsection{Segmentation Performance}
+\label{subsec:segmentation-performance}
+\input{sections/4-results/2 - segmentation performance}
+
+\subsection{Orientation Estimation}
+\label{subsec:orientation-estimation}
+\input{sections/4-results/3 - orientation estimation}
+
+\subsection{IoU vs. Orientation Error Relationship}
+\label{subsec:correlation}
+\input{sections/4-results/4 - correlation}
+
+\subsection{Qualitative Analysis}
+\label{subsec:qualitative-analysis}
+\input{sections/4-results/5 - fails}

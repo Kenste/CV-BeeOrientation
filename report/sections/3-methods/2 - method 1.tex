@@ -1,0 +1,8 @@
+Our first architecture is a compact, three-level U-Net inspired by the work of Bozek et al.~\cite{bozek2018pixel, bozek2021markerless}, and their publicly available implementation\footnote{Available at \href{https://github.com/kasiabozek/bee\_tracking}{github.com/kasiabozek/bee\_tracking}}.
+We reimplemented the architecture in PyTorch, while keeping the design as close as possible to the original TensorFlow implementation.
+The network consists of three downsampling blocks with increasing filter sizes (32, 64, and 128), a 256-filter bottleneck, and symmetric decoder blocks with skip connections.
+The final step is a 1x1 convolution that produces three-class logits (background, head, and tail).
+
+We trained this model using an Adam optimizer with a learning rate of $10^{-3}$ and a weighted cross-entropy loss with class weights of [0.1, 1.0, 1.0] to mitigate the dominance of background pixels.
+The model contains \qty{1927907}{} parameters and was trained for up to ten epochs.
+These hyperparameters were selected based on preliminary experiments and found to yield reasonable performance.

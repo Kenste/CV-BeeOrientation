@@ -1,0 +1,16 @@
+Bozek et al.~\cite{bozek2021markerless, bozek2018pixel} proposed a method to detect and track unmarked bees in dense hives.
+Their approach used a network to jointly predict segmentation masks of bee bodies and their orientation angles, achieving an orientation error of approximately \qty{10}{\degree}~\cite{bozek2021markerless}.
+A key insight of their work was to exploit temporal information from preceding video frames via a recurrent component in the U-Net architecture, which reduced the number of parameters by about \qty{94}{\percent}~\cite{bozek2021markerless, bozek2018pixel}.
+However, this temporal component is not available to us, as our experiments operate on static images only.
+
+To explore alternative architectures, we considered works demonstrating the effectiveness of ResNet-encoded U-Nets in segmentation tasks.
+Mukasheva et al.~\cite{mukasheva2024modification} modified U-Net with a ResNet50 encoder and an Atrous Spatial Pyramid Pooling block to improve segmentation quality on medical images (IoU from \qty{0.86}{} to \qtyrange{0.91}{0.93}{}).
+Although their results were on medical data, such architectures may also help improve segmentation quality in our setting, which exhibits clutter and occlusions but also isolates individual bees through cropping.
+
+Motivated by these findings, we compare two architectures:
+\begin{inparaenum}[(i)]
+    \item a compact 3-level U-Net inspired by~\cite{bozek2021markerless} and
+    \item a U-Net with a ResNet18 encoder.
+\end{inparaenum}
+The first provides a lightweight, proven baseline for bee detection and orientation estimation, while the second leverages pretrained features and greater capacity.
+In contrast to previous work, we specifically aim to segment head and tail regions separately to improve orientation estimates.

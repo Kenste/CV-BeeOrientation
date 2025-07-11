@@ -1,0 +1,26 @@
+To quantify the inherent noise in the annotations, we compared the ground truth angles obtained from the annotations with those derived from the ground truth segmentation masks (see \Cref{tab:gt_baseline_error}).
+The small discrepancy (mean $\approx$\qty{0.25}{\degree}) arises from the discretisation of the ellipses into pixelated masks, and it represents the lower bound of the achievable orientation error.
+\Cref{fig:gt-baseline-error} shows the histogram and cumulative distribution function (CDF) of this baseline error.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Orientation error between GT masks and GT CSV angles (baseline error).}
+    \label{tab:gt_baseline_error}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Metric}    & \textbf{Error}      \\
+        \midrule
+        Mean               & \qty{0.25}{\degree} \\
+        Std. Dev.          & \qty{0.20}{\degree} \\
+        Median             & \qty{0.22}{\degree} \\
+        \midrule
+        Percentiles        &                     \\
+        \qty{50}{\percent} & \qty{0.22}{\degree} \\
+        \qty{75}{\percent} & \qty{0.39}{\degree} \\
+        \qty{90}{\percent} & \qty{0.54}{\degree} \\
+        \qty{95}{\percent} & \qty{0.62}{\degree} \\
+        \qty{99}{\percent} & \qty{0.74}{\degree} \\
+        Max                & \qty{0.85}{\degree} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
