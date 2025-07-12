@@ -1,0 +1,15 @@
+We trained both models using the same dataset splits and identical training and validation pipelines.
+For evaluation purposes, we report on segmentation quality and orientation accuracy on the test set.
+
+Segmentation quality is measured by the per-class Intersection-over-Union (IoU) and the mean IoU (mIoU) computed over the foreground classes (head and tail).
+IoU and mIoU are standard metrics widely used in segmentation benchmarks~\cite{lin2014microsoft, kirillov2023segment, jha2020doubleu, ronneberger2015u}.
+
+To estimate the bee orientation from a predicted segmentation mask, we compute the center of mass of head and tail pixels, form a vector from tail to head, and calculate the angle between this vector and the vertical upward direction (measured clockwise). Mathematically~\cite{noauthor_nodate_math}:
+\begin{align*}
+    \alpha = \atantwo\left( x_{\text{head}} - x_{\text{tail}}, \; y_{\text{tail}} - y_{\text{head}} \right)
+\end{align*}
+where \((x_{\text{head}}, y_{\text{head}})\) and \((x_{\text{tail}}, y_{\text{tail}})\) are the respective centers of mass of the head and tail regions.
+The resulting angle $\alpha$ is compared to the ground truth angle from the CSV annotations, and the angular error (in degrees) is reported.
+
+We also quantify the inherent base error present in the dataset by comparing the orientation derived from the ground truth masks to the annotated ground truth angles in the CSV.
+This accounts for discretization artifacts and annotation noise in the masks and serves as a lower bound on the achievable orientation error.

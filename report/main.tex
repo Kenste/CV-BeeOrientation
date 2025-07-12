@@ -1,0 +1,93 @@
+\documentclass[11pt,a4paper,oneside]{scrartcl}
+
+\usepackage[USenglish]{babel}
+
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref,xcolor,microtype,ifthen}
+\usepackage{amsmath}
+\DeclareMathOperator{\atantwo}{atan2}
+
+\usepackage{booktabs}
+
+\usepackage{cleveref}
+
+\setkomafont{disposition}{}
+\setkomafont{descriptionlabel}{\bfseries}
+
+\usepackage[textwidth=460pt]{geometry}
+\usepackage{siunitx}
+\sisetup{range-phrase = {-}}
+
+
+% plots
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.12}
+\usepackage{float}
+
+% inline enumerate
+\usepackage{paralist}
+\usepackage{csquotes}
+
+\usepackage[backend=bibtex,style=ieee,hyperref,natbib]{biblatex}
+
+\addbibresource{references.bib}
+
+\newboolean{showhints}
+\setboolean{showhints}{true}
+
+\newcommand\hint[2]{
+    \ifthenelse{\boolean{showhints}}{
+        \begin{center}
+            \colorbox{black!10}{
+                \begin{minipage}{.963\textwidth}
+                    #2\hfill\textbf{#1}
+                \end{minipage}
+            }
+        \end{center}}{}
+}
+
+\title{Determining Object Orientation}
+\subtitle{Computer Vision Project Report}
+\author{Group 6 -- Asim, Jan-Philipp}
+
+\begin{document}
+
+    \maketitle
+
+
+    \section{Introduction}
+    \label{sec:introduction}
+    \input{sections/1-introduction/main}
+
+
+    \section{State of the Art}
+    \label{sec:state_of_the_art}
+    \input{sections/2-state of the art/main}
+
+
+    \section{Methods}
+    \label{sec:methods}
+    \input{sections/3-methods/main}
+
+
+    \section{Results}
+    \label{sub:results}
+    \input{sections/4-results/main}
+
+
+    \section{Discussion}
+    \label{sec:approach}
+    \input{sections/5-discussion/main}
+
+    \nocite{*}
+    \printbibliography
+
+    \appendix
+    \renewcommand{\thefigure}{A.\arabic{figure}}
+
+
+    \section{Additional Figures}
+    \input{sections/6-appendix/main}
+
+
+\end{document}

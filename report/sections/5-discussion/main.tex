@@ -1,0 +1,12 @@
+We demonstrated that head/tail segmentation could be employed to estimate bee orientation to a certain degree. However, we did not achieve the level of orientation accuracy reported by Bozek et al.~\cite{bozek2021markerless}.
+
+ResUNet18 produced slightly lower orientation errors and better segmentation than UNet3.
+However, both models fell far short of the ground-truth mask baseline error of approximately \qty{0.25}{\degree}, suggesting that segmentation errors dominate.
+Furthermore, our data suggests a correlation between segmentation quality and orientation accuracy.
+Nevertheless, even low-mIoU predictions occasionally yielded acceptable orientations.
+Many extreme errors appear to stem from mislabelled annotations, suggesting that the true orientation performance may be better than the measurements indicate.
+
+While ResUNet18’s stronger encoder helps in cluttered conditions, it also overfits quickly.
+Both models struggle in extreme clutter or when the bee is barely visible.
+Potential improvements include better annotations, regularization, and post-processing of predictions to resolve ambiguities.
+Finally, leveraging temporal information or multi-frame context, as in the work of Bozek et al.~\cite{bozek2018pixel, bozek2021markerless}, could enhance robustness and orientation estimation further.

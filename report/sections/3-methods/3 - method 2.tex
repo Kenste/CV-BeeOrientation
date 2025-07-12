@@ -1,0 +1,8 @@
+The second architecture integrates a ResNet18 encoder into a U-Net-like decoder structure, following Mukasheva et al.'s~\cite{mukasheva2024modification} idea of using a ResNet backbone with skip connections to improve segmentation quality.
+For the implementation, we followed the decoder design from the segmentation\_models.pytorch repository~\cite{Iakubovskii:2019}.
+
+The encoder is a pretrained ResNet18, and its intermediate feature maps are connected with upsampled decoder outputs via skip connections.
+The decoder mirrors the U-Net structure and ends with a 1×1 convolution, producing three-class logits.
+
+As with the U-Net3, we used the Adam optimizer with the same learning rate and loss weights and trained the model for ten epochs.
+Due to the larger encoder, the ResUNet18 has substantially more parameters (\qty{14239721}{}) than the U-Net3.

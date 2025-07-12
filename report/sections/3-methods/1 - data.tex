@@ -1,0 +1,18 @@
+We use the Honeybee Segmentation and Tracking Dataset\footnote{Dataset available at \href{https://groups.oist.jp/bptu/honeybee-tracking-dataset}{groups.oist.jp/bptu/honeybee-tracking-dataset}}, introduced by Bozek et al.~\cite{bozek2021markerless}, focusing on the \qty{30}{fps} grayscale video recordings.
+This dataset provides annotated frames indicating the positions, orientations, and within-cell states of the bees.
+
+We extract individual training examples from these frames by cropping fully visible bees into 160$\times$160 grayscale images.
+The crop size balances two competing goals: ensuring the bee is fully visible and centered, despite size differences and annotation noise, while minimizing the presence of neighboring bees.
+Some unavoidable background clutter may appear at the edges of the crop, but the annotated bee is centered and the only segmented individual.
+Other bees, if present, are treated as background noise.
+
+For each cropped image, we generate a dense segmentation mask, initialized as background (label~0).
+An ellipse is placed at the center of the bee, aligned with the annotated orientation and approximating the bee’s body shape.
+The half of the ellipse pointing in the orientation's direction is labeled head (label~1), and the opposite half is labeled tail (label~2).
+We also store the ground-truth orientation angle of the bee in a CSV file, along with the corresponding mask and crop filenames.
+
+Processing all annotated frames yields approximately \qty{130266}{} samples for training, validation, and testing.
+Occasional annotation errors (e.g., incorrect orientations) were rare and treated as noise that is not expected to bias the training process.
+
+We split the dataset into training (\qty{64}{\percent}), validation (\qty{16}{\percent}), and test (\qty{20}{\percent}) sets.
+We ensure reproducibility by fixing and reporting the random seed.

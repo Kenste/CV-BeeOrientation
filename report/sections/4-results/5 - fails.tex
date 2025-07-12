@@ -1,0 +1,16 @@
+To gain a better understanding of the areas in which the models are struggling, we conducted a qualitative analysis of failure cases from the test set.
+We focused on examples with significant orientation errors, particularly those around \qty{90}{\degree} and \qty{180}{\degree}, as these are indicative of challenging scenarios or annotation issues.
+
+Representative examples are shown in the appendix (\Cref{fig:failure_modes}), grouped by error type. Each panel displays the input image, the ground-truth mask, the predicted mask, and the measured orientation error.
+
+For \qty{180}{\degree} errors, the majority appear to stem from annotation errors rather than model mistakes: in all the examples shown, the annotated head and tail regions are reversed compared to the visible anatomy, while the model predictions point in the correct direction despite the imperfect masks.
+For instance, the UNet3 prediction in the first image provides a blurry yet correctly oriented segmentation, whereas the annotation erroneously labels the tail as the head.
+Similarly, the ResUNet18 predictions align well with the actual bee orientation, even when the annotation is flipped.
+
+Both models struggle with \qty{90}{\degree} errors in highly cluttered images where no bee is fully visible.
+In the UNet3 examples, the predicted masks are diffuse and are often confused by surrounding bees.
+The annotations themselves are ambiguous or clearly do not correspond to any individual bee.
+ResUNet18 performs better, often correctly segmenting one plausible bee even when the annotation does not correspond to it.
+In some cases, the image quality or visibility is so poor that neither the model nor the annotation appears reliable.
+
+These examples highlight the limitations of the models, particularly in cluttered and low-quality regions, as well as the inconsistencies in the ground-truth annotations, which may artificially inflate measured errors.
