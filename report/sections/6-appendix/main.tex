@@ -39,3 +39,20 @@
     \label{fig:appendix_resunet18_orientation}
 \end{figure}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.49\textwidth]{figures/results/5 - fails/UNet3 Worst Orientation Errors.png}
+    \hfill
+    \includegraphics[width=0.49\textwidth]{figures/results/5 - fails/ResUNet18 Worst Orientation Errors.png}
+
+    \includegraphics[width=0.49\textwidth]{figures/results/5 - fails/UNet3 Orientation Errors 90deg Range.png}
+    \hfill
+    \includegraphics[width=0.49\textwidth]{figures/results/5 - fails/ResUNet18 Orientation Errors 90deg Range.png}
+    \caption{
+        Qualitative failure cases for UNet3 (\textbf{left}) and ResUNet18 (\textbf{right}), with the worst absolute orientation errors (\textbf{top row}) and examples with errors around \qty{90}{\degree} (\textbf{bottom row}).
+        Each panel shows the input image, ground‑truth mask, predicted mask, and measured error.
+        In the worst (\qty{180}{\degree}) cases, annotations are often flipped, while model predictions remain plausible.
+        Around \qty{90}{\degree}, both models struggle in highly cluttered or ambiguous scenes, but ResUNet18 still produces more coherent segmentations than UNet3.
+    }
+    \label{fig:failure_modes}
+\end{figure}
